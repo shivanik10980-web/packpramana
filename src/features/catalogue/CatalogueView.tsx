@@ -161,8 +161,9 @@ export const CatalogueView: React.FC = () => {
                   <th style={{ width: '150px' }}>Seal Method</th>
                   <th style={{ width: '90px' }}>Mechanical</th>
                   <th style={{ width: '90px' }}>Unit Cost</th>
-                  <th style={{ width: '130px' }}>OTR / WVTR</th>
-                  <th style={{ width: '140px' }}>Evidence Status</th>
+                  <th style={{ width: '160px' }}>ASTM Measured Barrier</th>
+                  <th style={{ width: '160px' }}>Compliance & EPR</th>
+                  <th style={{ width: '120px' }}>Evidence Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -188,14 +189,29 @@ export const CatalogueView: React.FC = () => {
                     <td><strong>{p.mechanicalRating} / 5</strong></td>
                     <td><strong>₹{p.unitCostInr}</strong></td>
                     <td>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
-                        OTR: not measured<br />
-                        WVTR: not measured
+                      <div style={{ fontSize: '11px' }}>
+                        <div>
+                          <strong>OTR:</strong>{' '}
+                          {p.otr?.value != null ? `${p.otr.value} ${p.otr.unit}` : 'not measured'}
+                        </div>
+                        <div>
+                          <strong>WVTR:</strong>{' '}
+                          {p.wvtr?.value != null ? `${p.wvtr.value} ${p.wvtr.unit}` : 'not measured'}
+                        </div>
                       </div>
                     </td>
                     <td>
-                      <span className="badge badge-neutral" style={{ textTransform: 'none' }}>
-                        synthetic_demo
+                      <div style={{ fontSize: '11px' }}>
+                        <div>
+                          <strong>BIS:</strong>{' '}
+                          {Array.isArray(p.standardsRef) ? p.standardsRef.join(', ') : p.standardsRef || 'IS 15609'}
+                        </div>
+                        <div style={{ color: 'var(--color-text-muted)' }}>{p.pwmEprCategory || 'PWM Cat II'}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`badge ${p.evidenceStatus === 'astm_measured' || p.otr?.status === 'measured' ? 'badge-fresh' : 'badge-neutral'}`} style={{ textTransform: 'none' }}>
+                        {p.otr?.status === 'measured' ? 'ASTM Measured' : p.evidenceStatus || 'synthetic_demo'}
                       </span>
                     </td>
                   </tr>
@@ -243,8 +259,19 @@ export const CatalogueView: React.FC = () => {
                     <td>
                       <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
                         Moisture: {c.composition.moisturePct}% &bull; Fat: {c.composition.fatPct}% &bull; pH: {c.composition.pH}
+                        {c.waterActivity !== undefined && (
+                          <div>aw: <strong>{c.waterActivity}</strong> &bull; Class: <span style={{ textTransform: 'capitalize' }}>{c.respirationClass || 'normal'}</span></div>
+                        )}
+                        {c.recommendedMapGas && (
+                          <div style={{ color: 'var(--color-primary)', fontWeight: 500 }}>
+                            MAP:{' '}
+                            {typeof c.recommendedMapGas === 'object' && c.recommendedMapGas !== null
+                              ? `${(c.recommendedMapGas as any).o2Pct}% O₂ / ${(c.recommendedMapGas as any).co2Pct}% CO₂ / ${(c.recommendedMapGas as any).n2Pct}% N₂`
+                              : String(c.recommendedMapGas)}
+                          </div>
+                        )}
                         {c.composition.respirationMlCO2KgHour != null && (
-                          <div>Respiration: {c.composition.respirationMlCO2KgHour} ml/kg-h @ {c.composition.respirationTemperatureC}°C</div>
+                          <div>Rate: {c.composition.respirationMlCO2KgHour} ml/kg-h @ {c.composition.respirationTemperatureC}°C</div>
                         )}
                       </div>
                     </td>

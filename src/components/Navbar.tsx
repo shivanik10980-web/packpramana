@@ -15,6 +15,8 @@ import {
   Menu,
   X,
 } from 'lucide-react';
+import { isGeminiConfigured } from '../services/geminiClient';
+import { AiSettingsModal } from './AiSettingsModal';
 
 interface NavbarProps {
   currentRoute: string;
@@ -24,6 +26,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentRoute }) => {
   const { theme, effectiveTheme, setTheme } = useTheme();
   const { input, result } = useScenario();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
+  const [aiConfigured, setAiConfigured] = useState(() => isGeminiConfigured());
 
   const cycleTheme = () => {
     if (theme === 'system') setTheme('light');
@@ -181,6 +185,37 @@ export const Navbar: React.FC<NavbarProps> = ({ currentRoute }) => {
             </div>
           )}
 
+          {/* AI Settings / Status Pill */}
+          <button
+            type="button"
+            onClick={() => setAiSettingsOpen(true)}
+            className="btn-secondary btn-sm"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: 'var(--radius-full)',
+              fontSize: 'var(--font-size-xs)',
+              fontWeight: 600,
+              backgroundColor: aiConfigured ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.08)',
+              borderColor: aiConfigured ? 'var(--color-success)' : 'var(--color-border)',
+              color: aiConfigured ? 'var(--color-success)' : 'var(--color-text-muted)',
+            }}
+            title="Configure Gemini AI API Key & Model Settings"
+          >
+            <span
+              style={{
+                width: '7px',
+                height: '7px',
+                borderRadius: '50%',
+                backgroundColor: aiConfigured ? 'var(--color-success)' : 'var(--color-danger)',
+                boxShadow: aiConfigured ? '0 0 6px rgba(16,185,129,0.8)' : 'none',
+              }}
+            />
+            <span>{aiConfigured ? '✦ Gemini AI Active' : '✦ Connect AI'}</span>
+          </button>
+
           <button
             type="button"
             onClick={cycleTheme}
@@ -265,6 +300,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentRoute }) => {
           }
         }
       `}</style>
+
+      <AiSettingsModal
+        isOpen={aiSettingsOpen}
+        onClose={() => setAiSettingsOpen(false)}
+        onKeyUpdated={() => setAiConfigured(isGeminiConfigured())}
+      />
     </header>
   );
 };

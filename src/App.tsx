@@ -13,6 +13,8 @@ import { WhatIfView } from './features/whatif/WhatIfView';
 import { HistoryView } from './features/history/HistoryView';
 import { PrintableReportView } from './features/report/PrintableReportView';
 import { CatalogueView } from './features/catalogue/CatalogueView';
+import { AiCopilotDrawer } from './components/AiCopilotDrawer';
+import { AiSettingsModal } from './components/AiSettingsModal';
 
 function normalizeRoute(hash: string): string {
   const base = (hash || '#/').split('?')[0].replace(/\/$/, '');
@@ -20,6 +22,7 @@ function normalizeRoute(hash: string): string {
 }
 
 export function AppContent() {
+  const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
   const [currentRoute, setCurrentRoute] = useState<string>(() => {
     return normalizeRoute(window.location.hash);
   });
@@ -70,6 +73,14 @@ export function AppContent() {
       </main>
 
       <Footer />
+
+      {/* Global AI Food Packaging Assistant Co-Pilot Drawer */}
+      <AiCopilotDrawer onOpenSettings={() => setAiSettingsOpen(true)} />
+
+      <AiSettingsModal
+        isOpen={aiSettingsOpen}
+        onClose={() => setAiSettingsOpen(false)}
+      />
     </>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useScenario } from '../../context/ScenarioContext';
-import { COMPONENT_LABELS, explainTieBreak, formatContributionMath, EVIDENCE_LIMITATIONS } from '../../engine';
+import { COMPONENT_LABELS, explainTieBreak, formatContributionMath, EVIDENCE_LIMITATIONS, defaultSeedData } from '../../engine';
 import {
   Sparkles,
   AlertTriangle,
@@ -13,8 +13,12 @@ import {
   ChevronUp,
   Info,
   ShieldAlert,
+  ShieldCheck,
 } from 'lucide-react';
-import type { CandidateRecommendation } from '../../domain/types';
+import type { CandidateRecommendation, AIAnalysisResult, ComplianceAuditResult } from '../../domain/types';
+import { generateDeepPreservationAnalysis, generateComplianceAudit } from '../../services/aiFoodScienceService';
+import { isGeminiConfigured } from '../../services/geminiClient';
+import { AiSettingsModal } from '../../components/AiSettingsModal';
 
 export const ResultsView: React.FC = () => {
   const {
@@ -50,6 +54,36 @@ export const ResultsView: React.FC = () => {
 
   const topCandidate = result.candidates[0] as CandidateRecommendation | undefined;
   const alternatives = result.candidates.slice(1, 3); // Up to two alternatives, never padded
+
+  const currentCommodity = defaultSeedData.commodities.find((c) => c.id === input.commodityId);
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
+  const [complianceAudit, setComplianceAudit] = useState<ComplianceAuditResult | null>(null);
+  const [aiLoading, setAiLoading] = useState<boolean>(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiSettingsOpen, setAiSettingsOpen] = useState<boolean>(false);
+
+  const handleRunAiAnalysis = async () => {
+    if (!isGeminiConfigured()) {
+      setAiSettingsOpen(true);
+      return;
+    }
+    if (!topCandidate || !currentCommodity) return;
+
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const [analysisRes, auditRes] = await Promise.all([
+        generateDeepPreservationAnalysis(input, topCandidate, currentCommodity),
+        generateComplianceAudit(topCandidate.packaging, currentCommodity),
+      ]);
+      setAiAnalysis(analysisRes);
+      setComplianceAudit(auditRes);
+    } catch (err: any) {
+      setAiError(err.message || 'Failed to complete Gemini AI analysis');
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   return (
     <div style={{ padding: 'var(--space-6) 0 var(--space-12) 0' }}>
@@ -476,22 +510,184 @@ export const ResultsView: React.FC = () => {
                     }}
                   >
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
-                      <span className="badge badge-neutral">OTR: not measured</span>
-                      <span className="badge badge-neutral">WVTR: not measured</span>
-                      <span className="badge badge-neutral">Food contact: supplier verification pending</span>
+                      <span className="badge badge-neutral">
+                        OTR: {topCandidate.packaging.otr.status === 'measured' ? `${topCandidate.packaging.otr.value} ${topCandidate.packaging.otr.unit}` : 'not measured'}
+                      </span>
+                      <span className="badge badge-neutral">
+                        WVTR: {topCandidate.packaging.wvtr.status === 'measured' ? `${topCandidate.packaging.wvtr.value} ${topCandidate.packaging.wvtr.unit}` : 'not measured'}
+                      </span>
+                      {topCandidate.packaging.pwmEprCategory && (
+                        <span className="badge badge-fresh">EPR: {topCandidate.packaging.pwmEprCategory}</span>
+                      )}
+                      {topCandidate.packaging.recyclingCategory && (
+                        <span className="badge badge-neutral">Recycling: {topCandidate.packaging.recyclingCategory}</span>
+                      )}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => toggleCompareId(topCandidate.id)}
-                      className={compareIds.includes(topCandidate.id) ? 'btn-primary btn-sm' : 'btn-outline btn-sm'}
-                    >
-                      <Layers size={14} />
-                      <span>{compareIds.includes(topCandidate.id) ? 'In Compare' : 'Add to Compare'}</span>
-                    </button>
+                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                      <button
+                        type="button"
+                        onClick={handleRunAiAnalysis}
+                        disabled={aiLoading}
+                        className="btn-primary btn-sm"
+                        id="btn-analyze-gemini"
+                      >
+                        <Sparkles size={14} className={aiLoading ? 'animate-spin' : ''} />
+                        <span>{aiLoading ? 'Analyzing with Gemini...' : aiAnalysis ? 'Re-analyze with AI' : 'Analyze with Gemini AI'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleCompareId(topCandidate.id)}
+                        className={compareIds.includes(topCandidate.id) ? 'btn-secondary btn-sm' : 'btn-outline btn-sm'}
+                      >
+                        <Layers size={14} />
+                        <span>{compareIds.includes(topCandidate.id) ? 'In Compare' : 'Add to Compare'}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </section>
+            )}
+
+            {/* GEMINI AI SCIENTIFIC ANALYSIS & COMPLIANCE SECTION */}
+            {aiAnalysis && (
+              <section style={{ marginBottom: 'var(--space-8)' }}>
+                <div
+                  className="card"
+                  style={{
+                    border: '1px solid var(--color-primary-subtle)',
+                    backgroundColor: 'var(--color-surface)',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                    padding: 'var(--space-6)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: 'var(--radius-md)',
+                          backgroundColor: 'var(--color-primary)',
+                          color: '#FFFFFF',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Sparkles size={18} />
+                      </div>
+                      <div>
+                        <h2 style={{ fontSize: 'var(--font-size-md)', margin: 0 }}>
+                          Gemini AI Food Preservation & Regulatory Audit
+                        </h2>
+                        <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                          Preservation kinetics for {currentCommodity?.name} in {topCandidate?.name}
+                        </div>
+                      </div>
+                    </div>
+
+                    {complianceAudit && (
+                      <span
+                        className={`badge ${
+                          complianceAudit.fssaiStatus === 'compliant'
+                            ? 'badge-fresh'
+                            : 'badge-alert'
+                        }`}
+                      >
+                        <ShieldCheck size={12} style={{ marginRight: '4px' }} />
+                        FSSAI: {complianceAudit.fssaiStatus.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+
+                  <p style={{ fontSize: 'var(--font-size-sm)', lineHeight: 1.6, color: 'var(--color-text)', marginBottom: 'var(--space-4)' }}>
+                    {aiAnalysis.executiveSummary}
+                  </p>
+
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                      gap: 'var(--space-4)',
+                      marginBottom: 'var(--space-4)',
+                    }}
+                  >
+                    {/* Biochemical Protection */}
+                    <div style={{ padding: 'var(--space-4)', backgroundColor: 'var(--color-surface-sunken)', borderRadius: 'var(--radius-md)' }}>
+                      <div style={{ fontSize: 'var(--font-size-xs)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-primary)', marginBottom: '4px' }}>
+                        Biochemical Degradation Control
+                      </div>
+                      <div style={{ fontSize: 'var(--font-size-xs)', lineHeight: 1.5, color: 'var(--color-text)' }}>
+                        {aiAnalysis.biochemicalProtection}
+                      </div>
+                      <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                        <strong>Quality Retention Factor:</strong> {aiAnalysis.shelfLifeExtensionNote}
+                      </div>
+                    </div>
+
+                    {/* Active Packaging Advice */}
+                    <div style={{ padding: 'var(--space-4)', backgroundColor: 'var(--color-surface-sunken)', borderRadius: 'var(--radius-md)' }}>
+                      <div style={{ fontSize: 'var(--font-size-xs)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '4px' }}>
+                        Active Packaging Recommendations
+                      </div>
+                      {aiAnalysis.activePackagingAdvice.length > 0 ? (
+                        <ul style={{ paddingLeft: 'var(--space-4)', margin: 0, fontSize: 'var(--font-size-xs)', lineHeight: 1.5 }}>
+                          {aiAnalysis.activePackagingAdvice.map((item, idx) => (
+                            <li key={idx} style={{ marginBottom: '4px' }}>
+                              <strong>{item.type}:</strong> {item.details}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                          Standard passive barrier package is sufficient without active sachets.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Regulatory & PWM Compliance Card */}
+                  {complianceAudit && (
+                    <div
+                      style={{
+                        padding: 'var(--space-3) var(--space-4)',
+                        backgroundColor: 'var(--color-surface-sunken)',
+                        borderRadius: 'var(--radius-md)',
+                        borderLeft: '4px solid var(--color-success)',
+                        fontSize: 'var(--font-size-xs)',
+                        lineHeight: 1.5,
+                        marginBottom: 'var(--space-3)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '4px', marginBottom: '4px' }}>
+                        <strong>Indian Regulatory Status (FSSAI 2018 & PWM 2024):</strong>
+                        <span style={{ color: 'var(--color-text-muted)' }}>BIS Standard: {complianceAudit.bisStandard} &bull; EPR: {complianceAudit.pwmCategory}</span>
+                      </div>
+                      <div>{complianceAudit.fssaiDetails}</div>
+                      <div style={{ marginTop: '4px', color: 'var(--color-text-muted)' }}>
+                        <strong>Recycling Guidance:</strong> {complianceAudit.recyclingGuidance}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Risk Warnings */}
+                  {aiAnalysis.riskWarnings.length > 0 && (
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <AlertTriangle size={14} style={{ color: 'var(--color-warning)', flexShrink: 0 }} />
+                      <span><strong>Key Processing Caution: </strong>{aiAnalysis.riskWarnings.join('; ')}</span>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {aiError && (
+              <div className="alert-box alert-danger" style={{ marginBottom: 'var(--space-6)', fontSize: 'var(--font-size-xs)' }}>
+                <AlertTriangle size={16} />
+                <span>{aiError}</span>
+              </div>
             )}
 
             {/* ALTERNATIVES SECTION (Up to 2, never padded) */}
@@ -806,6 +1002,12 @@ export const ResultsView: React.FC = () => {
           }
         }
       `}</style>
+
+      {/* AI Settings Modal */}
+      <AiSettingsModal
+        isOpen={aiSettingsOpen}
+        onClose={() => setAiSettingsOpen(false)}
+      />
     </div>
   );
 };

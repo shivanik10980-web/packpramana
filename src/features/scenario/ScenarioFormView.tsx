@@ -12,7 +12,11 @@ import {
   Info,
   CheckCircle2,
   Settings2,
+  Sparkles,
 } from 'lucide-react';
+import { SmartAiIngestModal } from './SmartAiIngestModal';
+import { AiSettingsModal } from '../../components/AiSettingsModal';
+import type { ScenarioExtractionResult } from '../../domain/types';
 
 const formSchema = z.object({
   commodityId: z.string().min(1, 'Please select a commodity'),
@@ -51,6 +55,8 @@ export const ScenarioFormView: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [errorSummary, setErrorSummary] = useState<string[]>([]);
   const [showAdvanced, setShowAdvanced] = useState<boolean>(Boolean(input.composition));
+  const [aiModalOpen, setAiModalOpen] = useState<boolean>(false);
+  const [aiSettingsOpen, setAiSettingsOpen] = useState<boolean>(false);
 
   const {
     register,
@@ -96,8 +102,20 @@ export const ScenarioFormView: React.FC = () => {
       setValue('fatPct', comm.composition.fatPct);
       setValue('pH', comm.composition.pH);
       setValue('respirationMlCO2KgHour', comm.composition.respirationMlCO2KgHour);
-      setValue('respirationTemperatureC', comm.composition.respirationTemperatureC);
     }
+  };
+
+  const handleApplyAiExtraction = (extracted: ScenarioExtractionResult) => {
+    setValue('commodityId', extracted.commodityId);
+    setValue('storageType', extracted.storageType);
+    setValue('temperatureC', extracted.temperatureC);
+    setValue('relativeHumidityPct', extracted.relativeHumidityPct);
+    setValue('targetDays', extracted.targetDays);
+    setValue('distanceKm', extracted.distanceKm);
+    setValue('transportSeverity', extracted.transportSeverity);
+    setValue('packMassG', extracted.packMassG);
+    setValue('budgetInrPerPack', extracted.budgetInrPerPack);
+    setValue('costPriority', extracted.costPriority);
   };
 
   const onSubmit = (data: FormValues) => {
@@ -158,6 +176,41 @@ export const ScenarioFormView: React.FC = () => {
   return (
     <div style={{ padding: 'var(--space-6) 0 var(--space-12) 0' }}>
       <div className="container">
+        {/* Header with Title and AI Smart Ingest Action */}
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 'var(--space-3)',
+            marginBottom: 'var(--space-6)',
+          }}
+        >
+          <div>
+            <h1 style={{ fontSize: 'var(--font-size-2xl)', margin: 0 }}>Configure Packaging Scenario</h1>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)', marginTop: '4px' }}>
+              Define food commodity characteristics, environmental storage conditions, and distribution parameters.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setAiModalOpen(true)}
+            className="btn-secondary"
+            id="btn-open-ai-ingest"
+            style={{
+              borderColor: 'var(--color-primary)',
+              color: 'var(--color-primary)',
+              backgroundColor: 'var(--color-primary-subtle)',
+              fontWeight: 700,
+            }}
+          >
+            <Sparkles size={16} />
+            <span>AI Smart Ingest (Photo / Text)</span>
+          </button>
+        </div>
+
         {/* Step Progress Tracker */}
         <div style={{ marginBottom: 'var(--space-6)' }}>
           <div
@@ -883,6 +936,23 @@ export const ScenarioFormView: React.FC = () => {
           }
         }
       `}</style>
+
+      {/* AI Smart Ingestion Modal */}
+      <SmartAiIngestModal
+        isOpen={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        onApply={handleApplyAiExtraction}
+        onOpenSettings={() => {
+          setAiModalOpen(false);
+          setAiSettingsOpen(true);
+        }}
+      />
+
+      {/* AI Settings Modal */}
+      <AiSettingsModal
+        isOpen={aiSettingsOpen}
+        onClose={() => setAiSettingsOpen(false)}
+      />
     </div>
   );
 };

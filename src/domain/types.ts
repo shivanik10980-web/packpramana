@@ -31,6 +31,11 @@ export interface Commodity {
   required: BarrierRequirements;
   evidenceStatus: string;
   sourceIds: string[];
+  // Real-world food science properties
+  waterActivity?: number;
+  respirationClass?: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
+  primaryDegradationMode?: string;
+  recommendedMapGas?: { o2Pct: number; co2Pct: number; n2Pct: number };
 }
 
 export interface BarrierMeasurement {
@@ -65,6 +70,11 @@ export interface PackagingRecord {
   foodContactStatus: string;
   evidenceStatus: string;
   sourceIds: string[];
+  // Industrial packaging physical & regulatory properties
+  recyclingCategory?: string;
+  pwmEprCategory?: 'Category I (Rigid)' | 'Category II (Flexible)' | 'Category III (Multi-layered)' | 'Compostable';
+  fssaiMigrationStatus?: string;
+  standardsRef?: string[];
 }
 
 export interface DataSource {
@@ -153,4 +163,48 @@ export interface SavedScenario {
   input: ScenarioInput;
   result: EngineResult;
   note?: string;
+}
+
+// ==========================================
+// Gemini AI Intelligence & Assistant Schemas
+// ==========================================
+
+export interface AIAnalysisResult {
+  executiveSummary: string;
+  biochemicalProtection: string;
+  shelfLifeExtensionNote: string;
+  activePackagingAdvice: Array<{ type: string; details: string }>;
+  riskWarnings: string[];
+}
+
+export interface ComplianceAuditResult {
+  fssaiStatus: 'compliant' | 'caution' | 'requires_food_grade_liner';
+  fssaiDetails: string;
+  bisStandard: string;
+  pwmCategory: string;
+  recyclingGuidance: string;
+}
+
+export interface ScenarioExtractionResult {
+  commodityId: string;
+  commodityName: string;
+  storageType: StorageType;
+  temperatureC: number;
+  relativeHumidityPct: number;
+  targetDays: number;
+  distanceKm: number;
+  transportSeverity: TransportSeverity;
+  packMassG: number;
+  budgetInrPerPack: number;
+  costPriority: CostPriority;
+  inferredHazards: string[];
+  confidenceScore: number;
+  rationale: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: string;
 }
