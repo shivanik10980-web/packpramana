@@ -206,7 +206,7 @@ export const ScenarioFormView: React.FC = () => {
                           : currentStep > step.num
                           ? 'var(--color-success)'
                           : 'var(--color-surface-sunken)',
-                      color: currentStep === step.num || currentStep > step.num ? '#FFFFFF' : 'inherit',
+                      color: currentStep >= step.num ? '#FFFFFF' : 'inherit',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',

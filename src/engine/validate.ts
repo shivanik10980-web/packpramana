@@ -82,8 +82,10 @@ export function validateScenarioInput(s: ScenarioInput, commodities: Commodity[]
       return { status: 'invalid', errors: invalid };
     }
 
-    const compositionKeys = Object.keys(a) as Array<keyof CommodityComposition>;
-    if (compositionKeys.some((k) => a[k] !== c.composition[k])) {
+    const allKeys = Array.from(
+      new Set([...Object.keys(a), ...Object.keys(c.composition)])
+    ) as Array<keyof CommodityComposition>;
+    if (allKeys.some((k) => (a[k] ?? null) !== (c.composition[k] ?? null))) {
       return {
         status: 'review_required',
         errors: ['Composition differs from the authored fixture'],

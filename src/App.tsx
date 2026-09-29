@@ -14,15 +14,19 @@ import { HistoryView } from './features/history/HistoryView';
 import { PrintableReportView } from './features/report/PrintableReportView';
 import { CatalogueView } from './features/catalogue/CatalogueView';
 
+function normalizeRoute(hash: string): string {
+  const base = (hash || '#/').split('?')[0].replace(/\/$/, '');
+  return base === '#' || base === '' ? '#/' : base;
+}
+
 export function AppContent() {
   const [currentRoute, setCurrentRoute] = useState<string>(() => {
-    return window.location.hash || '#/';
+    return normalizeRoute(window.location.hash);
   });
 
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash || '#/';
-      setCurrentRoute(hash);
+      setCurrentRoute(normalizeRoute(window.location.hash));
       window.scrollTo(0, 0);
     };
 

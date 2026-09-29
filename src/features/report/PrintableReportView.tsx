@@ -10,10 +10,12 @@ export const PrintableReportView: React.FC = () => {
     window.print();
   };
 
-  const reportDate = new Date().toLocaleString(undefined, {
-    dateStyle: 'full',
-    timeStyle: 'medium',
-  });
+  const [reportDate] = React.useState(() =>
+    new Date().toLocaleString(undefined, {
+      dateStyle: 'full',
+      timeStyle: 'medium',
+    })
+  );
 
   return (
     <div style={{ padding: 'var(--space-6) 0 var(--space-12) 0' }}>

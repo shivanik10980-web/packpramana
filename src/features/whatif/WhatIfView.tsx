@@ -12,6 +12,16 @@ export const WhatIfView: React.FC = () => {
   const [budget, setBudget] = useState<number>(whatIfInput ? whatIfInput.budgetInrPerPack : baselineInput.budgetInrPerPack);
   const [distKm, setDistKm] = useState<number>(whatIfInput ? whatIfInput.distanceKm : baselineInput.distanceKm);
 
+  // Sync with baseline changes when not running an active what-if
+  const [prevBaseline, setPrevBaseline] = useState(baselineInput);
+  if (!whatIfInput && prevBaseline !== baselineInput) {
+    setPrevBaseline(baselineInput);
+    setTempC(baselineInput.temperatureC);
+    setRhPct(baselineInput.relativeHumidityPct);
+    setBudget(baselineInput.budgetInrPerPack);
+    setDistKm(baselineInput.distanceKm);
+  }
+
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
     const updated: ScenarioInput = {
@@ -35,13 +45,16 @@ export const WhatIfView: React.FC = () => {
   // Determine what changed if simulation is active
   const hasRun = Boolean(whatIfResult);
 
-  let targetDifferences: string[] = [];
-  let candidateRankDifferences: string[] = [];
+  const targetDifferences: string[] = [];
+  const candidateRankDifferences: string[] = [];
   let statusChanged = false;
   let noChanges = false;
 
   if (hasRun && whatIfResult) {
     statusChanged = baselineResult.status !== whatIfResult.status;
+    if (statusChanged) {
+      candidateRankDifferences.push(`Engine status shifted from ${baselineResult.status} to ${whatIfResult.status}.`);
+    }
 
     // Target checks
     if (baselineResult.targets && whatIfResult.targets) {
@@ -69,19 +82,28 @@ export const WhatIfView: React.FC = () => {
     if (!baseTop && !whatTop) {
       // Both empty
     } else if (!baseTop && whatTop) {
-      candidateRankDifferences.push(`New eligible top recommendation: ${whatTop.name} (${whatTop.displayScore} pts)`);
+      candidateRankDifferences.push(`New eligible top recommendation: ${whatTop.name} (${whatTop.displayScore.toFixed(1)} pts)`);
     } else if (baseTop && !whatTop) {
       candidateRankDifferences.push(`Previous top candidate (${baseTop.name}) became ineligible; no candidate now qualifies.`);
     } else if (baseTop && whatTop) {
       if (baseTop.id !== whatTop.id) {
         candidateRankDifferences.push(
-          `Top candidate changed from ${baseTop.name} (${baseTop.displayScore} pts) to ${whatTop.name} (${whatTop.displayScore} pts)`
+          `Top candidate changed from ${baseTop.name} (${baseTop.displayScore.toFixed(1)} pts) to ${whatTop.name} (${whatTop.displayScore.toFixed(1)} pts)`
         );
       } else if (baseTop.displayScore !== whatTop.displayScore) {
         candidateRankDifferences.push(
-          `Top candidate remained ${baseTop.name}, but score changed from ${baseTop.displayScore} to ${whatTop.displayScore} pts`
+          `Top candidate remained ${baseTop.name}, but score changed from ${baseTop.displayScore.toFixed(1)} to ${whatTop.displayScore.toFixed(1)} pts`
         );
       }
+    }
+
+    // Newly eligible candidates
+    const baseCandidateIds = new Set(baselineResult.candidates.map((c) => c.id));
+    const newlyEligible = whatIfResult.candidates.filter((c) => !baseCandidateIds.has(c.id));
+    if (newlyEligible.length > 0) {
+      newlyEligible.forEach((c) => {
+        candidateRankDifferences.push(`Candidate ${c.name} became newly eligible (Score: ${c.displayScore.toFixed(1)} pts).`);
+      });
     }
 
     // Newly rejected candidates
@@ -91,6 +113,14 @@ export const WhatIfView: React.FC = () => {
       newlyRejected.forEach((r) => {
         candidateRankDifferences.push(`Candidate ${r.name} failed gates under modified conditions: ${r.reasons.join(', ')}`);
       });
+    }
+
+    // Other score adjustments
+    for (const cand of whatIfResult.candidates) {
+      const baseCand = baselineResult.candidates.find((bc) => bc.id === cand.id);
+      if (baseCand && baseCand.displayScore !== cand.displayScore && baseCand.id !== baseTop?.id) {
+        candidateRankDifferences.push(`${cand.name} score changed from ${baseCand.displayScore.toFixed(1)} to ${cand.displayScore.toFixed(1)} pts.`);
+      }
     }
 
     if (

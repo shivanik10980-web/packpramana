@@ -38,12 +38,24 @@ export function explainTieBreak(
   const displayTied = current.displayScore === other.displayScore;
   const rawTied = Math.abs(current.score - other.score) < 0.0001;
 
-  if (displayTied || rawTied) {
+  if (rawTied) {
     if (current.unitCostInr < other.unitCostInr) {
-      return `Tied with ${other.name} (${other.displayScore} pts); ranked higher due to lower unit cost (₹${current.unitCostInr} vs ₹${other.unitCostInr}).`;
+      return `Tied with ${other.name} on score (${current.displayScore.toFixed(1)} pts); ranked higher due to lower unit cost (₹${current.unitCostInr} vs ₹${other.unitCostInr}).`;
     }
-    if (current.unitCostInr === other.unitCostInr) {
-      return `Tied with ${other.name} on score and unit cost; ordered alphabetically by catalogue ID (${current.id} vs ${other.id}).`;
+    if (current.unitCostInr > other.unitCostInr) {
+      return `Tied with ${other.name} on score (${other.displayScore.toFixed(1)} pts); ranked lower due to higher unit cost (₹${current.unitCostInr} vs ₹${other.unitCostInr}).`;
+    }
+    if (current.id.localeCompare(other.id) < 0) {
+      return `Tied with ${other.name} on score and unit cost (₹${current.unitCostInr}); ordered ahead alphabetically by catalogue ID (${current.id} vs ${other.id}).`;
+    }
+    if (current.id.localeCompare(other.id) > 0) {
+      return `Tied with ${other.name} on score and unit cost (₹${current.unitCostInr}); ordered after alphabetically by catalogue ID (${current.id} vs ${other.id}).`;
+    }
+  } else if (displayTied) {
+    if (current.score > other.score) {
+      return `Shares rounded score (${current.displayScore.toFixed(1)} pts) with ${other.name}; ranked higher by unrounded engine score (${current.score.toFixed(2)} vs ${other.score.toFixed(2)} pts).`;
+    } else {
+      return `Shares rounded score (${current.displayScore.toFixed(1)} pts) with ${other.name}; ranked lower by unrounded engine score (${current.score.toFixed(2)} vs ${other.score.toFixed(2)} pts).`;
     }
   }
   return null;

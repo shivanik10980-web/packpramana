@@ -89,7 +89,7 @@ export function scoreCandidate(
 }
 
 export function sortCandidates(candidates: CandidateRecommendation[]): CandidateRecommendation[] {
-  return candidates.sort(
+  return [...candidates].sort(
     (a, b) =>
       b.score - a.score ||
       a.unitCostInr - b.unitCostInr ||

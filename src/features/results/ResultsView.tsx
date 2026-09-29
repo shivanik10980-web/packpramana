@@ -510,7 +510,10 @@ export const ResultsView: React.FC = () => {
                 >
                   {alternatives.map((alt, idx) => {
                     const isExpanded = expandedCandidateId === alt.id;
-                    const tieNote = explainTieBreak(alt, topCandidate!);
+                    const prevCandidate = idx === 0 ? topCandidate! : alternatives[idx - 1];
+                    const tieNote =
+                      explainTieBreak(alt, prevCandidate) ||
+                      (topCandidate && alt.id !== topCandidate.id ? explainTieBreak(alt, topCandidate) : null);
 
                     return (
                       <div key={alt.id} className="card" style={{ display: 'flex', flexDirection: 'column' }}>

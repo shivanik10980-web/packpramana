@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useScenario } from '../../context/ScenarioContext';
 import { scenarioRepository } from '../../storage/scenarioRepository';
 import {
@@ -28,9 +28,8 @@ import {
 export const HistoryView: React.FC = () => {
   const { loadSaved, runScenario } = useScenario();
 
-  const [scenarios, setScenarios] = useState<SavedScenario[]>([]);
-  const [corruptedCount, setCorruptedCount] = useState<number>(0);
-  const [storageError, setStorageError] = useState<string | undefined>();
+  const [data, setData] = useState(() => scenarioRepository.getAll());
+  const { scenarios, corruptedCount, storageError } = data;
   const [deletedScenario, setDeletedScenario] = useState<SavedScenario | null>(null);
 
   // Rename state
@@ -47,15 +46,8 @@ export const HistoryView: React.FC = () => {
   } | null>(null);
 
   const refreshList = () => {
-    const { scenarios: list, corruptedCount: count, storageError: err } = scenarioRepository.getAll();
-    setScenarios(list);
-    setCorruptedCount(count);
-    setStorageError(err);
+    setData(scenarioRepository.getAll());
   };
-
-  useEffect(() => {
-    refreshList();
-  }, []);
 
   const handleInspect = (s: SavedScenario) => {
     loadSaved(s);
@@ -134,18 +126,13 @@ export const HistoryView: React.FC = () => {
     if (res.success && res.data) {
       let imported = 0;
       for (const cloudScen of res.data) {
-        const saveRes = scenarioRepository.save(
-          cloudScen.name,
-          cloudScen.input,
-          cloudScen.result,
-          cloudScen.note
-        );
-        if (saveRes.success) imported++;
+        const importRes = scenarioRepository.importScenario(cloudScen);
+        if (importRes.success) imported++;
       }
       refreshList();
       setCloudSyncStatus({
         success: true,
-        message: `Fetched ${res.data.length} scenarios from Supabase (${imported} new imported locally).`,
+        message: `Fetched ${res.data.length} scenarios from Supabase (${imported} synchronized locally).`,
       });
       setTimeout(() => setCloudSyncStatus(null), 4000);
     } else {

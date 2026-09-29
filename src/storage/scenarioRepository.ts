@@ -232,6 +232,28 @@ export class ScenarioRepository {
     }
   }
 
+  importScenario(scenario: SavedScenario): { success: boolean; imported?: SavedScenario; error?: string } {
+    try {
+      const check = SavedScenarioSchema.safeParse(scenario);
+      if (!check.success) {
+        return { success: false, error: 'Invalid scenario payload schema' };
+      }
+      const { scenarios } = this.getAll();
+      const existingIndex = scenarios.findIndex((s) => s.id === scenario.id);
+      let updated: SavedScenario[];
+      if (existingIndex >= 0) {
+        updated = [...scenarios];
+        updated[existingIndex] = scenario;
+      } else {
+        updated = [scenario, ...scenarios];
+      }
+      getStorage().setItem(STORAGE_KEY, JSON.stringify(updated));
+      return { success: true, imported: scenario };
+    } catch (err: any) {
+      return { success: false, error: err instanceof Error ? err.message : 'Storage write failed' };
+    }
+  }
+
   saveDraft(input: ScenarioInput): void {
     try {
       getStorage().setItem(DRAFT_KEY, JSON.stringify(input));

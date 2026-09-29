@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { recommend, defaultSeedData } from '../engine';
-import type { ScenarioInput } from '../domain/types';
+import { recommend, defaultSeedData, explainTieBreak, sortCandidates } from '../engine';
+import type { ScenarioInput, CandidateRecommendation } from '../domain/types';
 
 describe('PackPramana Engine Parity and Contract Tests', () => {
   const strawberryScenario: ScenarioInput = {
@@ -209,4 +209,61 @@ describe('PackPramana Engine Parity and Contract Tests', () => {
     const r2 = recommend(strawberryScenario);
     expect(r1).toEqual(r2);
   });
+
+  it('sortCandidates does not mutate the input candidates array', () => {
+    const res = recommend(strawberryScenario);
+    const originalOrder = [...res.candidates];
+    const reverseInput = [...res.candidates].reverse();
+    const sorted = sortCandidates(reverseInput);
+
+    expect(sorted.map((c) => c.id)).toEqual(originalOrder.map((c) => c.id));
+    // Verify reverseInput array was not mutated in place
+    expect(reverseInput[0].id).toBe(originalOrder[originalOrder.length - 1].id);
+  });
+
+  it('accurately explains tie breaks for raw score ties, cost separation, and rounded score ties', () => {
+    const sampleCand = (id: string, name: string, score: number, unitCostInr: number): CandidateRecommendation => ({
+      id,
+      name,
+      score,
+      displayScore: Number(score.toFixed(1)),
+      unitCostInr,
+      overBudgetInr: 0,
+      components: { F: 100, C: 100, M: 100, E: 100, R: 100 },
+      contributions: { F: 40, C: 20, M: 15, E: 15, R: 10 },
+      weights: { F: 0.4, C: 0.2, M: 0.15, E: 0.15, R: 0.1 },
+      reasons: [],
+      warnings: [],
+      packaging: defaultSeedData.packaging[0],
+    });
+
+    // 1. Raw tie, separated by unit cost (winning perspective)
+    const c1 = sampleCand('p02', 'Punnet A', 96.0, 6);
+    const c2 = sampleCand('p01', 'Punnet B', 96.0, 7);
+    const tieWin = explainTieBreak(c1, c2);
+    expect(tieWin).toContain('ranked higher due to lower unit cost (₹6 vs ₹7)');
+
+    // 2. Raw tie, separated by unit cost (trailing perspective)
+    const tieLoss = explainTieBreak(c2, c1);
+    expect(tieLoss).toContain('ranked lower due to higher unit cost (₹7 vs ₹6)');
+
+    // 3. Raw tie & cost tie, separated alphabetically by ID
+    const c3 = sampleCand('p01', 'Pack 1', 90.0, 5);
+    const c4 = sampleCand('p02', 'Pack 2', 90.0, 5);
+    expect(explainTieBreak(c3, c4)).toContain('ordered ahead alphabetically by catalogue ID (p01 vs p02)');
+    expect(explainTieBreak(c4, c3)).toContain('ordered after alphabetically by catalogue ID (p02 vs p01)');
+
+    // 4. Same rounded display score (82.4) but different unrounded raw scores (82.44 vs 82.36)
+    const cHigh = sampleCand('p10', 'Format X', 82.44, 15);
+    const cLow = sampleCand('p11', 'Format Y', 82.36, 10);
+    const displayTieHigh = explainTieBreak(cHigh, cLow);
+    expect(displayTieHigh).toContain('ranked higher by unrounded engine score (82.44 vs 82.36 pts)');
+    const displayTieLow = explainTieBreak(cLow, cHigh);
+    expect(displayTieLow).toContain('ranked lower by unrounded engine score (82.36 vs 82.44 pts)');
+
+    // 5. Completely different scores
+    const cDiff = sampleCand('p20', 'Format Z', 70.0, 5);
+    expect(explainTieBreak(c1, cDiff)).toBeNull();
+  });
 });
+

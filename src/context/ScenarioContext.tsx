@@ -82,7 +82,7 @@ export const ScenarioProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const foundDemo = defaultSeedData.demoScenarios.find((d) => d.id === demoId);
     if (!foundDemo) return;
 
-    const { id, ...scenarioData } = foundDemo;
+    const { id: _unusedId, ...scenarioData } = foundDemo;
     const name = demoId === 'strawberry' ? 'Fresh Strawberry Demo' : 'Turmeric Powder Demo';
     runScenario(scenarioData, name);
     window.location.hash = '#/results';
