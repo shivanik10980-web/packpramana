@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "catalogueVersion": "demo-1.0",
+  "rulesVersion": "rules-1.0",
+  "disclaimer": "All commodity numbers, candidate capabilities, dimensions, prices and coverage limits are synthetic test fixtures. Not supplier specifications or food-safety guidance.",
+  "sources": [
+    {
+      "id": "fixture-v1",
+      "title": "PackPramana authored demo fixtures",
+      "evidenceType": "synthetic",
+      "url": null
+    },
+    {
+      "id": "ucd-strawberry",
+      "title": "UC Davis Strawberry Produce Facts",
+      "url": "https://postharvest.ucdavis.edu/produce-facts-sheets/strawberry",
+      "scope": "Background only; does not validate seed values"
+    },
+    {
+      "id": "fao-packaging",
+      "title": "FAO Packaging Materials",
+      "url": "https://www.fao.org/4/V5030E/V5030E0h.htm",
+      "scope": "General material property distinctions"
+    },
+    {
+      "id": "fssai-packaging",
+      "title": "FSSAI Packaging Amendments",
+      "url": "https://fssai.gov.in/food-law/regulations/amendments/packaging",
+      "scope": "Current requirements starting point; no compliance inference"
+    }
+  ],
+  "demoScenarios": [
+    {
+      "id": "strawberry",
+      "commodityId": "strawberry",
+      "storageType": "chilled",
+      "temperatureC": 4,
+      "relativeHumidityPct": 90,
+      "targetDays": 5,
+      "distanceKm": 120,
+      "transportSeverity": "normal",
+      "packMassG": 250,
+      "budgetInrPerPack": 8,
+      "costPriority": "balanced"
+    },
+    {
+      "id": "turmeric",
+      "commodityId": "turmeric",
+      "storageType": "ambient",
+      "temperatureC": 25,
+      "relativeHumidityPct": 50,
+      "targetDays": 30,
+      "distanceKm": 120,
+      "transportSeverity": "normal",
+      "packMassG": 250,
+      "budgetInrPerPack": 5,
+      "costPriority": "balanced"
+    },
+    {
+      "id": "unsupported",
+      "commodityId": "strawberry",
+      "storageType": "chilled",
+      "temperatureC": 28,
+      "relativeHumidityPct": 90,
+      "targetDays": 5,
+      "distanceKm": 120,
+      "transportSeverity": "normal",
+      "packMassG": 250,
+      "budgetInrPerPack": 8,
+      "costPriority": "balanced"
+    }
+  ],
+  "commodities": [
+    {"id":"strawberry","name":"Strawberry","category":"fresh","composition":{"moisturePct":91,"fatPct":0.3,"pH":3.4,"respirationMlCO2KgHour":20,"respirationTemperatureC":5},"storageType":"chilled","temperatureC":[0,5],"prototypeMaxDays":7,"required":{"moisture":0,"oxygen":0,"light":0,"grease":0},"evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"tomato","name":"Tomato","category":"fresh","composition":{"moisturePct":94,"fatPct":0.2,"pH":4.3,"respirationMlCO2KgHour":15,"respirationTemperatureC":5},"storageType":"chilled","temperatureC":[10,15],"prototypeMaxDays":7,"required":{"moisture":0,"oxygen":0,"light":0,"grease":0},"evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"spinach","name":"Spinach","category":"fresh","composition":{"moisturePct":92,"fatPct":0.4,"pH":6.5,"respirationMlCO2KgHour":40,"respirationTemperatureC":5},"storageType":"chilled","temperatureC":[0,5],"prototypeMaxDays":5,"required":{"moisture":0,"oxygen":0,"light":0,"grease":0},"evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"turmeric","name":"Turmeric powder","category":"dry","composition":{"moisturePct":8,"fatPct":4,"pH":6,"respirationMlCO2KgHour":null,"respirationTemperatureC":null},"storageType":"ambient","temperatureC":[15,30],"prototypeMaxDays":90,"required":{"moisture":3,"oxygen":3,"light":3,"grease":2},"evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"peanuts","name":"Roasted peanuts","category":"dry","composition":{"moisturePct":2,"fatPct":49,"pH":6.3,"respirationMlCO2KgHour":null,"respirationTemperatureC":null},"storageType":"ambient","temperatureC":[15,30],"prototypeMaxDays":60,"required":{"moisture":3,"oxygen":4,"light":2,"grease":4},"evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"rice","name":"Rice","category":"dry","composition":{"moisturePct":12,"fatPct":1,"pH":6.5,"respirationMlCO2KgHour":null,"respirationTemperatureC":null},"storageType":"ambient","temperatureC":[15,30],"prototypeMaxDays":90,"required":{"moisture":3,"oxygen":1,"light":0,"grease":0},"evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"chips","name":"Potato chips","category":"dry","composition":{"moisturePct":2,"fatPct":33,"pH":6,"respirationMlCO2KgHour":null,"respirationTemperatureC":null},"storageType":"ambient","temperatureC":[15,30],"prototypeMaxDays":45,"required":{"moisture":4,"oxygen":4,"light":3,"grease":4},"evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"biscuits","name":"Biscuits","category":"dry","composition":{"moisturePct":3,"fatPct":15,"pH":6.8,"respirationMlCO2KgHour":null,"respirationTemperatureC":null},"storageType":"ambient","temperatureC":[15,30],"prototypeMaxDays":60,"required":{"moisture":4,"oxygen":3,"light":1,"grease":3},"evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]}
+  ],
+  "packaging": [
+    {"id":"p01","name":"Vented PET punnet","structure":"PET rigid body with vents","format":"punnet","breathable":true,"compatibleCategories":["fresh"],"temperatureC":[0,15],"thicknessMicron":[250,400],"sealMethod":"snap closure","capabilities":{"moisture":0,"oxygen":0,"light":0,"grease":0},"mechanicalRating":4,"unitCostInr":7,"endOfLifeScore":3,"endOfLifeNote":"Synthetic ordinal scenario. Actual collection, separation and disposal route must be verified locally.","nominalPackMassG":250,"otr":{"value":null,"unit":"cm3/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"wvtr":{"value":null,"unit":"g/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"gasPermeability":"not_measured","mapStatus":"expert_design_required","foodContactStatus":"supplier_verification_pending","evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"p02","name":"Vented PP punnet","structure":"PP rigid body with vents","format":"punnet","breathable":true,"compatibleCategories":["fresh"],"temperatureC":[0,15],"thicknessMicron":[300,450],"sealMethod":"snap closure","capabilities":{"moisture":0,"oxygen":0,"light":0,"grease":0},"mechanicalRating":4,"unitCostInr":6,"endOfLifeScore":3,"endOfLifeNote":"Synthetic ordinal scenario. Actual collection, separation and disposal route must be verified locally.","nominalPackMassG":250,"otr":{"value":null,"unit":"cm3/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"wvtr":{"value":null,"unit":"g/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"gasPermeability":"not_measured","mapStatus":"expert_design_required","foodContactStatus":"supplier_verification_pending","evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"p03","name":"Micro-perforated PE pouch","structure":"Micro-perforated LDPE","format":"pouch","breathable":true,"compatibleCategories":["fresh"],"temperatureC":[0,15],"thicknessMicron":[30,50],"sealMethod":"heat seal trial required","capabilities":{"moisture":0,"oxygen":0,"light":0,"grease":0},"mechanicalRating":3,"unitCostInr":3,"endOfLifeScore":2,"endOfLifeNote":"Synthetic ordinal scenario. Actual collection, separation and disposal route must be verified locally.","nominalPackMassG":250,"otr":{"value":null,"unit":"cm3/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"wvtr":{"value":null,"unit":"g/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"gasPermeability":"not_measured","mapStatus":"expert_design_required","foodContactStatus":"supplier_verification_pending","evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"p04","name":"LDPE pouch","structure":"LDPE monolayer","format":"pouch","breathable":false,"compatibleCategories":["dry"],"temperatureC":[5,40],"thicknessMicron":[50,80],"sealMethod":"heat seal trial required","capabilities":{"moisture":3,"oxygen":1,"light":0,"grease":3},"mechanicalRating":3,"unitCostInr":2,"endOfLifeScore":3,"endOfLifeNote":"Synthetic ordinal scenario. Actual collection, separation and disposal route must be verified locally.","nominalPackMassG":250,"otr":{"value":null,"unit":"cm3/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"wvtr":{"value":null,"unit":"g/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"gasPermeability":"not_measured","mapStatus":"expert_design_required","foodContactStatus":"supplier_verification_pending","evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"p05","name":"HDPE pouch","structure":"HDPE monolayer","format":"pouch","breathable":false,"compatibleCategories":["dry"],"temperatureC":[5,40],"thicknessMicron":[50,80],"sealMethod":"heat seal trial required","capabilities":{"moisture":4,"oxygen":2,"light":1,"grease":3},"mechanicalRating":4,"unitCostInr":3,"endOfLifeScore":3,"endOfLifeNote":"Synthetic ordinal scenario. Actual collection, separation and disposal route must be verified locally.","nominalPackMassG":250,"otr":{"value":null,"unit":"cm3/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"wvtr":{"value":null,"unit":"g/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"gasPermeability":"not_measured","mapStatus":"expert_design_required","foodContactStatus":"supplier_verification_pending","evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"p06","name":"PET/PE pouch","structure":"PET / PE laminate","format":"pouch","breathable":false,"compatibleCategories":["dry"],"temperatureC":[5,40],"thicknessMicron":[60,90],"sealMethod":"PE heat-seal layer","capabilities":{"moisture":3,"oxygen":3,"light":3,"grease":4},"mechanicalRating":4,"unitCostInr":4,"endOfLifeScore":1,"endOfLifeNote":"Synthetic ordinal scenario. Actual collection, separation and disposal route must be verified locally.","nominalPackMassG":250,"otr":{"value":null,"unit":"cm3/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"wvtr":{"value":null,"unit":"g/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"gasPermeability":"not_measured","mapStatus":"expert_design_required","foodContactStatus":"supplier_verification_pending","evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"p07","name":"Metallized laminate","structure":"PET / metallized PET / PE","format":"pouch","breathable":false,"compatibleCategories":["dry"],"temperatureC":[5,40],"thicknessMicron":[70,100],"sealMethod":"PE heat-seal layer","capabilities":{"moisture":5,"oxygen":4,"light":5,"grease":5},"mechanicalRating":4,"unitCostInr":5,"endOfLifeScore":1,"endOfLifeNote":"Synthetic ordinal scenario. Actual collection, separation and disposal route must be verified locally.","nominalPackMassG":250,"otr":{"value":null,"unit":"cm3/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"wvtr":{"value":null,"unit":"g/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"gasPermeability":"not_measured","mapStatus":"expert_design_required","foodContactStatus":"supplier_verification_pending","evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"p08","name":"Foil laminate","structure":"PET / aluminium foil / PE","format":"pouch","breathable":false,"compatibleCategories":["dry"],"temperatureC":[5,40],"thicknessMicron":[80,120],"sealMethod":"PE heat-seal layer","capabilities":{"moisture":5,"oxygen":5,"light":5,"grease":5},"mechanicalRating":5,"unitCostInr":8,"endOfLifeScore":0,"endOfLifeNote":"Synthetic ordinal scenario. Actual collection, separation and disposal route must be verified locally.","nominalPackMassG":250,"otr":{"value":null,"unit":"cm3/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"wvtr":{"value":null,"unit":"g/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"gasPermeability":"not_measured","mapStatus":"expert_design_required","foodContactStatus":"supplier_verification_pending","evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"p09","name":"Coated cellulose concept","structure":"Coated regenerated cellulose","format":"pouch","breathable":false,"compatibleCategories":["dry"],"temperatureC":[5,35],"thicknessMicron":[30,50],"sealMethod":"supplier-dependent sealing","capabilities":{"moisture":2,"oxygen":3,"light":0,"grease":3},"mechanicalRating":2,"unitCostInr":6,"endOfLifeScore":2,"endOfLifeNote":"Synthetic ordinal scenario. Actual collection, separation and disposal route must be verified locally.","nominalPackMassG":250,"otr":{"value":null,"unit":"cm3/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"wvtr":{"value":null,"unit":"g/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"gasPermeability":"not_measured","mapStatus":"expert_design_required","foodContactStatus":"supplier_verification_pending","evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]},
+    {"id":"p10","name":"Opaque PP tub","structure":"Opaque PP body with sealable lid","format":"tub","breathable":false,"compatibleCategories":["dry"],"temperatureC":[5,40],"thicknessMicron":[350,600],"sealMethod":"lidding trial required","capabilities":{"moisture":4,"oxygen":3,"light":4,"grease":4},"mechanicalRating":5,"unitCostInr":7,"endOfLifeScore":3,"endOfLifeNote":"Synthetic ordinal scenario. Actual collection, separation and disposal route must be verified locally.","nominalPackMassG":250,"otr":{"value":null,"unit":"cm3/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"wvtr":{"value":null,"unit":"g/(m2 day)","temperatureC":null,"relativeHumidityPct":null,"method":null,"status":"not_measured"},"gasPermeability":"not_measured","mapStatus":"expert_design_required","foodContactStatus":"supplier_verification_pending","evidenceStatus":"synthetic_demo","sourceIds":["fixture-v1"]}
+  ]
+}
